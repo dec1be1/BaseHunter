@@ -43,10 +43,10 @@ def consolidate(results):
 
 ### GLOBAL VARIABLES ###
 
-b64_regex = "^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$"
+b64_regex = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/][AQgw]==|[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=)?$"
 b64_pattern = re.compile(b64_regex)
 len_min = 5
-len_max = 100
+line_len_max = 100000000
 
 
 ### MAIN FUNCTION ###
@@ -89,13 +89,14 @@ def main():
     results = []
     for line in data_lines:
         line_len = len(line)
-        for candidate_len in range(len_min, len_max+1):
-            i_max = line_len - candidate_len
-            if i_max > 0:
+        assert line_len < line_len_max
+        for candidate_len in range(len_min, line_len+1):
+            if line_len > len_min:
+                i_max = line_len - candidate_len
                 for i in range(i_max):
-                    candidate = line[i:i+candidate_len].strip()
+                    candidate = line[i:i+candidate_len+1].strip()
                     #print(candidate)
-                    if is_base64(candidate) and len(candidate) >= 0:
+                    if is_base64(candidate) and len(candidate) > 0:
                         candidate_decoded = b64decode(candidate)
                         if is_unicode(candidate_decoded):
                             results.append(candidate_decoded.decode())
