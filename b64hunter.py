@@ -9,16 +9,36 @@ from sys import stdin, exit
 
 def is_base64(str):
     """
-    return True is it is a base64 string or False if it is not
+    str is a string object.
+    return True is it is a base64 string or False if it is not.
     """
     return b64_pattern.match(str, 0, len(str))
 
-def is_text(data_b):
+def is_unicode(data_b):
+    """
+    data_b is a bytes object.
+    """
     try:
         data_b.decode()
         return True
     except UnicodeDecodeError:
         return False
+
+def consolidate(results):
+    """
+    result is a list object.
+    return a consolidated list.
+    """
+    results_c = results.copy()
+    for i in range(len(results)):
+        for j in range(len(results)):
+            if i != j:
+                if results[i] in results[j]:
+                    try:
+                        results_c.remove(results[i])
+                    except ValueError:
+                        pass
+    return results_c
 
 
 ### GLOBAL VARIABLES ###
@@ -36,11 +56,9 @@ def main():
     parser = argparse.ArgumentParser(description="This script look for base64 strings and try to decode it.")
     parser.add_argument("-f", "--file", help="The path of the input file.", required=False)
     parser.add_argument("-i", "--stdin", help="This option makes the script read on stdin", required=False, action='store_true')
-    parser.add_argument("-o", "--output", help="The path of the output file. Print to stdout if not specified.", required=False)
     args = parser.parse_args()
 
     file_path = args.file
-    output_path = args.output
     STDIN = args.stdin
 
     # Check arguments
@@ -56,7 +74,7 @@ def main():
             data_b = f.read()
 
     # Check if input is only unicode
-    if is_text(data_b):
+    if is_unicode(data_b):
         data = data_b.decode()
     else:
         print("[!] Error: input data must be only unicode. Bye!")
@@ -68,17 +86,22 @@ def main():
         data_lines[i] = data_lines[i].strip()
 
     # Check for candidate
+    results = []
     for line in data_lines:
         line_len = len(line)
         for candidate_len in range(len_min, len_max+1):
-            if (line_len - candidate_len) > 0:
-                for i in range(line_len - candidate_len):
+            i_max = line_len - candidate_len
+            if i_max > 0:
+                for i in range(i_max):
                     candidate = line[i:i+candidate_len].strip()
                     #print(candidate)
-                    if is_base64(candidate) and len(candidate) >= candidate_len:
+                    if is_base64(candidate) and len(candidate) >= 0:
                         candidate_decoded = b64decode(candidate)
-                        if is_text(candidate_decoded):
-                            print(candidate_decoded.decode())
+                        if is_unicode(candidate_decoded):
+                            results.append(candidate_decoded.decode())
+
+    for r in consolidate(results):
+        print(r)
 
 
 if __name__ == '__main__':
