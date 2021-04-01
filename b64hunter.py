@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import re
 import argparse
+from re import compile, match
 from base64 import b64decode
 from sys import stdin, exit
 
@@ -44,7 +44,7 @@ def consolidate(results):
 ### GLOBAL VARIABLES ###
 
 b64_regex = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/][AQgw]==|[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=)?$"
-b64_pattern = re.compile(b64_regex)
+b64_pattern = compile(b64_regex)
 len_min = 5
 line_len_max = 100000000
 
