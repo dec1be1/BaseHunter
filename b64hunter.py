@@ -33,7 +33,7 @@ def consolidate(results):
     for i in range(len(results)):
         for j in range(len(results)):
             if i != j:
-                if results[i] in results[j]:
+                if results[i][1] in results[j][1]:
                     try:
                         results_c.remove(results[i])
                     except ValueError:
@@ -87,7 +87,9 @@ def main():
 
     # Check for candidate
     results = []
+    li = 0
     for line in data_lines:
+        li += 1
         line_len = len(line)
         assert line_len < line_len_max
         for candidate_len in range(len_min, line_len+1):
@@ -99,10 +101,10 @@ def main():
                     if is_base64(candidate) and len(candidate) > 0:
                         candidate_decoded = b64decode(candidate)
                         if is_unicode(candidate_decoded):
-                            results.append(candidate_decoded.decode())
+                            results.append((li, candidate_decoded.decode()))
 
     for r in consolidate(results):
-        print(r)
+        print("[+] Line {0}: {1}".format(r[0], r[1]))
 
 
 if __name__ == '__main__':
