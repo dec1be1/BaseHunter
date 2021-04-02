@@ -72,13 +72,14 @@ def main():
     else:
         with open(file_path, 'rb') as f:
             data_b = f.read()
+    print("[+] Info: Input data loaded!")
 
     # Check if input is only unicode
-    if is_unicode(data_b):
-        data = data_b.decode()
-    else:
+    if not is_unicode(data_b):
         print("[!] Error: input data must be only unicode. Bye!")
         exit(1)
+
+    data = data_b.decode()
 
     # Split data and strip each lines
     data_lines = data.split("\n")
@@ -86,6 +87,7 @@ def main():
         data_lines[i] = data_lines[i].strip()
 
     # Check for candidate
+    print("[*] Info: Hunting for base64 strings...")
     results = []
     li = 0
     for line in data_lines:
@@ -103,9 +105,19 @@ def main():
                         if is_unicode(candidate_decoded):
                             results.append((li, candidate_decoded.decode()))
 
-    for r in consolidate(results):
-        print("[+] Line {0}: {1}".format(r[0], r[1]))
+    # Consolidate results
+    print("[*] Info: Consolidating results...")
+    results_c = consolidate(results)
 
+    # Print results
+    if len(results_c) > 0:
+        print("[+] Info: {0} base64 strings found! Here are the decoded versions:".format(len(results_c)))
+        for r in results_c:
+            print("  -> Line {0}: {1}".format(r[0], r[1]))
+    else:
+        print("[+] Info: base64 string not found. Bye!")
+
+    exit(0)
 
 if __name__ == '__main__':
     main()
