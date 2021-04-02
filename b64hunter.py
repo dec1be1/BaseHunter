@@ -45,21 +45,23 @@ def consolidate(results):
 
 b64_regex = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/][AQgw]==|[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=)?$"
 b64_pattern = compile(b64_regex)
-len_min = 5
-line_len_max = 100000000
 
 
 ### MAIN FUNCTION ###
 
 def main():
 
-    parser = argparse.ArgumentParser(description="This script look for base64 strings and try to decode it.")
+    parser = argparse.ArgumentParser(description="This script hunt base64 strings and try to decode it.")
     parser.add_argument("-f", "--file", help="The path of the input file.", required=False)
     parser.add_argument("-i", "--stdin", help="This option makes the script read on stdin", required=False, action='store_true')
+    parser.add_argument("-n", "--minlen", help="The minimum length of base64 string to hunt. Default is 5.", required=False, default=5)
+    parser.add_argument("-x", "--maxlen", help="The maximum length of base64 string to hunt. Default is 200.", required=False, default=200)
     args = parser.parse_args()
 
     file_path = args.file
     STDIN = args.stdin
+    len_min = args.minlen
+    len_max = args.maxlen
 
     # Check arguments
     if not file_path and not STDIN:
@@ -93,9 +95,8 @@ def main():
     for line in data_lines:
         li += 1
         line_len = len(line)
-        assert line_len < line_len_max
         for candidate_len in range(len_min, line_len+1):
-            if line_len > len_min:
+            if candidate_len <= len_max:
                 i_max = line_len - candidate_len
                 for i in range(i_max):
                     candidate = line[i:i+candidate_len+1].strip()
