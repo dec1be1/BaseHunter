@@ -74,7 +74,7 @@ def main():
     else:
         with open(file_path, 'rb') as f:
             data_b = f.read()
-    print("[+] Info: Input data loaded!")
+    print("[+] Info: Input data loaded: {0} bytes.".format(len(data_b)))
 
     # Check if input is only unicode
     if not is_unicode(data_b):
@@ -85,11 +85,12 @@ def main():
 
     # Split data and strip each lines
     data_lines = data.split("\n")
+    print("[+] Info: Input data contains {0} line(s).".format(len(data_lines)))
     for i in range(len(data_lines)):
         data_lines[i] = data_lines[i].strip()
 
     # Check for candidate
-    print("[*] Info: Hunting for base64 strings...")
+    print("[*] Info: Hunting for base64 strings (minlen: {0} / maxlen: {1})...".format(len_min, len_max))
     results = []
     li = 0
     for line in data_lines:
