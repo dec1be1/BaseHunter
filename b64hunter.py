@@ -109,6 +109,7 @@ def main():
     # Consolidate results
     print("[*] Info: Consolidating results...")
     results_c = consolidate(results)
+    results.clear()
 
     # Print results
     if len(results_c) > 0:
