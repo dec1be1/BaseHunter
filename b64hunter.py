@@ -118,7 +118,7 @@ def main():
         for r in results_c:
             print("  -> Line {0}: {1}".format(r[0], r[1]))
     else:
-        print("[+] Info: base64 string not found. Bye!")
+        print("[+] Info: base64 strings not found. Bye!")
 
     exit(0)
 
