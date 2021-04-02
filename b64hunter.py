@@ -51,7 +51,7 @@ b64_pattern = compile(b64_regex)
 
 def main():
 
-    parser = argparse.ArgumentParser(description="This script hunt base64 strings and try to decode it.")
+    parser = argparse.ArgumentParser(description="This script hunt base64 strings in unicode data and try to decode it.")
     parser.add_argument("-f", "--file", help="The path of the input file.", required=False)
     parser.add_argument("-i", "--stdin", help="This option makes the script read on stdin", required=False, action='store_true')
     parser.add_argument("-n", "--minlen", help="The minimum length of base64 string to hunt. Default is 5.", required=False, default=5)
