@@ -24,6 +24,28 @@ def is_unicode(data_b):
     except UnicodeDecodeError:
         return False
 
+def search_candidates(data_lines, len_min, len_max):
+    """
+    data_lines is an array of strings.
+    Return an array of 2-tuples (line_number, candidate).
+    """
+    results = []
+    li = 0
+    for line in data_lines:
+        li += 1
+        line_len = len(line)
+        for candidate_len in range(len_min, line_len+1):
+            if candidate_len <= len_max:
+                i_max = line_len - candidate_len
+                for i in range(i_max):
+                    candidate = line[i:i+candidate_len+1].strip()
+                    #print(candidate)
+                    if is_base64(candidate) and len(candidate) > 0:
+                        candidate_decoded = b64decode(candidate)
+                        if is_unicode(candidate_decoded):
+                            results.append((li, candidate_decoded.decode()))
+    return results
+
 def consolidate(results):
     """
     result is a list object.
@@ -65,7 +87,7 @@ def main():
 
     # Check arguments
     if not file_path and not STDIN:
-        print("[!] Error: You must give me some data. Bye!")
+        print("[!] Error: You must give me some data. Try \"--help\". Bye!")
         exit(1)
 
     # Get input data
@@ -89,23 +111,9 @@ def main():
     for i in range(len(data_lines)):
         data_lines[i] = data_lines[i].strip()
 
-    # Check for candidate
+    # Search for candidate
     print("[*] Info: Hunting for base64 strings (minlen: {0} / maxlen: {1})...".format(len_min, len_max))
-    results = []
-    li = 0
-    for line in data_lines:
-        li += 1
-        line_len = len(line)
-        for candidate_len in range(len_min, line_len+1):
-            if candidate_len <= len_max:
-                i_max = line_len - candidate_len
-                for i in range(i_max):
-                    candidate = line[i:i+candidate_len+1].strip()
-                    #print(candidate)
-                    if is_base64(candidate) and len(candidate) > 0:
-                        candidate_decoded = b64decode(candidate)
-                        if is_unicode(candidate_decoded):
-                            results.append((li, candidate_decoded.decode()))
+    results = search_candidates(data_lines, len_min, len_max)
 
     # Consolidate results
     print("[*] Info: Consolidating results...")
