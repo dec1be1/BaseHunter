@@ -33,6 +33,13 @@ def get_decodefunction_and_basepattern(base):
         from base64 import b64decode
         decode_function = b64decode
         base_regex = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/][AQgw]==|[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=)?$"
+    elif base == "16":
+        decode_function = bytes.fromhex
+        base_regex = "^([A-Fa-f0-9][A-Fa-f0-9])+$"
+    elif base == "32":
+        from base64 import b32decode
+        decode_function = b32decode
+        base_regex = "^(?:[A-Z2-7]{8})*(?:[A-Z2-7]{2}={6}|[A-Z2-7]{4}={4}|[A-Z2-7]{5}={3}|[A-Z2-7]{7}=)?$"
     else:
         print("[!] Error: Base {0} not found. Bye!".format(base))
         exit(1)
@@ -53,7 +60,6 @@ def search_candidates(base_pattern, decode_f, data_lines, len_min, len_max):
                 i_max = line_len - candidate_len
                 for i in range(i_max):
                     candidate = line[i:i+candidate_len+1].strip()
-                    #print(candidate)
                     if is_base(base_pattern, candidate) and len(candidate) > 0:
                         candidate_decoded = decode_f(candidate)
                         if is_unicode(candidate_decoded):
@@ -79,9 +85,9 @@ def consolidate(results):
 
 ### GLOBAL VARIABLES ###
 
+default_base = "64"
 default_minlen = 5
 default_maxlen = 50
-default_base = "64"
 
 
 ### MAIN FUNCTION ###
