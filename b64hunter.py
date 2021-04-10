@@ -65,6 +65,9 @@ def consolidate(results):
 
 ### GLOBAL VARIABLES ###
 
+default_minlen = 5
+default_maxlen = 50
+
 b64_regex = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/][AQgw]==|[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=)?$"
 b64_pattern = compile(b64_regex)
 
@@ -76,8 +79,8 @@ def main():
     parser = argparse.ArgumentParser(description="This script hunt base64 strings in unicode data and try to decode it.")
     parser.add_argument("-f", "--file", help="The path of the input file.", required=False)
     parser.add_argument("-i", "--stdin", help="This option makes the script read on stdin", required=False, action='store_true')
-    parser.add_argument("-n", "--minlen", help="The minimum length of base64 string to hunt. Default is 5.", required=False, default=5)
-    parser.add_argument("-x", "--maxlen", help="The maximum length of base64 string to hunt. Default is 200.", required=False, default=200)
+    parser.add_argument("-n", "--minlen", help="The minimum length of base64 string to hunt. Default is {0}.".format(default_minlen), required=False, default=default_minlen)
+    parser.add_argument("-x", "--maxlen", help="The maximum length of base64 string to hunt. Default is {0}.".format(default_maxlen), required=False, default=default_maxlen)
     args = parser.parse_args()
 
     file_path = args.file
