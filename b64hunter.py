@@ -56,7 +56,7 @@ def search_candidates(base_pattern, decode_f, data_lines, len_min, len_max):
         li += 1
         line_len = len(line)
         for candidate_len in range(len_min, line_len+1):
-            if candidate_len <= len_max:
+            if len_min <= candidate_len <= len_max:
                 i_max = line_len - candidate_len
                 for i in range(i_max):
                     candidate = line[i:i+candidate_len+1].strip()
