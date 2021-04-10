@@ -2,17 +2,17 @@
 
 import argparse
 from re import compile, match
-from base64 import b64decode
 from sys import stdin, exit
 
 ### FUNCTIONS ###
 
-def is_base64(str):
+def is_base(base_pattern, str):
     """
+    base_pattern is a compiled python3 regex.
     str is a string object.
-    return True is it is a base64 string or False if it is not.
+    return True if the string match the base_pattern or False if it is not.
     """
-    return b64_pattern.match(str, 0, len(str))
+    return base_pattern.match(str, 0, len(str))
 
 def is_unicode(data_b):
     """
@@ -24,10 +24,10 @@ def is_unicode(data_b):
     except UnicodeDecodeError:
         return False
 
-def search_candidates(data_lines, len_min, len_max):
+def search_candidates(base_pattern, decode_f, data_lines, len_min, len_max):
     """
     data_lines is an array of strings.
-    Return an array of 2-tuples (line_number, candidate).
+    return an array of 2-tuples (line_number, candidate).
     """
     results = []
     li = 0
@@ -40,8 +40,8 @@ def search_candidates(data_lines, len_min, len_max):
                 for i in range(i_max):
                     candidate = line[i:i+candidate_len+1].strip()
                     #print(candidate)
-                    if is_base64(candidate) and len(candidate) > 0:
-                        candidate_decoded = b64decode(candidate)
+                    if is_base(base_pattern, candidate) and len(candidate) > 0:
+                        candidate_decoded = decode_f(candidate)
                         if is_unicode(candidate_decoded):
                             results.append((li, candidate_decoded.decode()))
     return results
@@ -67,31 +67,48 @@ def consolidate(results):
 
 default_minlen = 5
 default_maxlen = 50
-
-b64_regex = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/][AQgw]==|[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=)?$"
-b64_pattern = compile(b64_regex)
+default_base = "64"
 
 
 ### MAIN FUNCTION ###
 
 def main():
 
-    parser = argparse.ArgumentParser(description="This script hunt base64 strings in unicode data and try to decode it.")
+    parser = argparse.ArgumentParser(description="This script hunts baseXX strings in unicode data and try to decode it.")
     parser.add_argument("-f", "--file", help="The path of the input file.", required=False)
     parser.add_argument("-i", "--stdin", help="This option makes the script read on stdin", required=False, action='store_true')
     parser.add_argument("-n", "--minlen", help="The minimum length of base64 string to hunt. Default is {0}.".format(default_minlen), required=False, default=default_minlen)
     parser.add_argument("-x", "--maxlen", help="The maximum length of base64 string to hunt. Default is {0}.".format(default_maxlen), required=False, default=default_maxlen)
+    parser.add_argument("-b", "--base", help="The base of string to hunt. Default is {0}.".format(default_base), required=False, default=default_base)
     args = parser.parse_args()
 
     file_path = args.file
     STDIN = args.stdin
-    len_min = args.minlen
-    len_max = args.maxlen
+    len_min = int(args.minlen)
+    len_max = int(args.maxlen)
+    base = args.base
 
     # Check arguments
     if not file_path and not STDIN:
         print("[!] Error: You must give me some data. Try \"--help\". Bye!")
         exit(1)
+
+    # Base
+    if base == "64":
+        try:
+            from base64 import b64decode
+        except ModuleNotFoundError:
+            print("[!] Error: base{0} decode function cannot be imported. Bye!".format(base))
+            exit(1)
+
+        decode_function = b64decode
+        base_regex = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/][AQgw]==|[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=)?$"
+        
+    else:
+        print("[!] Error: Base {0} not found. Bye!".format(base))
+        exit(1)
+
+    base_pattern = compile(base_regex)
 
     # Get input data
     if STDIN:
@@ -114,9 +131,9 @@ def main():
     for i in range(len(data_lines)):
         data_lines[i] = data_lines[i].strip()
 
-    # Search for candidate
-    print("[*] Info: Hunting for base64 strings (minlen: {0} / maxlen: {1})...".format(len_min, len_max))
-    results = search_candidates(data_lines, len_min, len_max)
+    # Search for candidates
+    print("[*] Info: Hunting base{0} strings (minlen: {1} / maxlen: {2})...".format(base, len_min, len_max))
+    results = search_candidates(base_pattern, decode_function, data_lines, len_min, len_max)
 
     # Consolidate results
     print("[*] Info: Consolidating results...")
@@ -125,11 +142,11 @@ def main():
 
     # Print results
     if len(results_c) > 0:
-        print("[+] Info: {0} base64 strings found! Here are the decoded versions:".format(len(results_c)))
+        print("[+] Info: {0} base{1} strings found! Here are the decoded versions:".format(len(results_c), base))
         for r in results_c:
             print("  -> Line {0}: {1}".format(r[0], r[1]))
     else:
-        print("[+] Info: base64 strings not found. Bye!")
+        print("[+] Info: base{0} strings not found. Bye!".format(base))
 
     exit(0)
 
