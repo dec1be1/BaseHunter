@@ -24,6 +24,20 @@ def is_unicode(data_b):
     except UnicodeDecodeError:
         return False
 
+def get_decodefunction_and_basepattern(base):
+    """
+    base is a string ("64" for example).
+    return a 2-tuple (decode_function, base_pattern).
+    """
+    if base == "64":
+        from base64 import b64decode
+        decode_function = b64decode
+        base_regex = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/][AQgw]==|[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=)?$"
+    else:
+        print("[!] Error: Base {0} not found. Bye!".format(base))
+        exit(1)
+    return (decode_function, compile(base_regex))
+
 def search_candidates(base_pattern, decode_f, data_lines, len_min, len_max):
     """
     data_lines is an array of strings.
@@ -94,21 +108,7 @@ def main():
         exit(1)
 
     # Base
-    if base == "64":
-        try:
-            from base64 import b64decode
-        except ModuleNotFoundError:
-            print("[!] Error: base{0} decode function cannot be imported. Bye!".format(base))
-            exit(1)
-
-        decode_function = b64decode
-        base_regex = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/][AQgw]==|[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=)?$"
-        
-    else:
-        print("[!] Error: Base {0} not found. Bye!".format(base))
-        exit(1)
-
-    base_pattern = compile(base_regex)
+    decode_function, base_pattern = get_decodefunction_and_basepattern(base)
 
     # Get input data
     if STDIN:
