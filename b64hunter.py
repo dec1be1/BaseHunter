@@ -100,7 +100,7 @@ def main():
 
     # Check if input is only unicode
     if not is_unicode(data_b):
-        print("[!] Error: input data must be only unicode. Bye!")
+        print("[!] Error: input data must be unicode only. Bye!")
         exit(1)
 
     data = data_b.decode()
