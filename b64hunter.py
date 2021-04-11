@@ -75,12 +75,11 @@ def consolidate(results):
     results_c = results.copy()
     for i in range(len(results)):
         for j in range(len(results)):
-            if i != j:
-                if results[i][1] in results[j][1]:
-                    try:
-                        results_c.remove(results[i])
-                    except ValueError:
-                        pass
+            if (i!=j) and (results[i][1] in results[j][1]):
+                try:
+                    results_c.remove(results[i])
+                except ValueError:
+                    pass
     return results_c
 
 
@@ -95,12 +94,12 @@ default_maxlen = 50
 
 def main():
 
-    parser = argparse.ArgumentParser(description="This script hunts baseXX strings in unicode data and try to decode it.")
+    parser = argparse.ArgumentParser(description="This script hunts baseXX encoded strings in unicode data and try to decode it.")
     parser.add_argument("-f", "--file", help="The path of the input file.", required=False)
     parser.add_argument("-i", "--stdin", help="This option makes the script read on stdin", required=False, action='store_true')
-    parser.add_argument("-n", "--minlen", help="The minimum length of base64 string to hunt. Default is {0}.".format(default_minlen), required=False, default=default_minlen)
-    parser.add_argument("-x", "--maxlen", help="The maximum length of base64 string to hunt. Default is {0}.".format(default_maxlen), required=False, default=default_maxlen)
-    parser.add_argument("-b", "--base", help="The base of string to hunt. Default is {0}.".format(default_base), required=False, default=default_base)
+    parser.add_argument("-n", "--minlen", help="The minimum length of encoded strings to hunt. Default is {0}.".format(default_minlen), required=False, default=default_minlen)
+    parser.add_argument("-x", "--maxlen", help="The maximum length of encoded strings to hunt. Default is {0}.".format(default_maxlen), required=False, default=default_maxlen)
+    parser.add_argument("-b", "--base", help="The base of encoded strings to hunt. Default is {0}.".format(default_base), required=False, default=default_base)
     args = parser.parse_args()
 
     file_path = args.file
