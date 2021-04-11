@@ -55,11 +55,12 @@ def search_candidates(base_pattern, decode_f, data_lines, len_min, len_max):
     for line in data_lines:
         li += 1
         line_len = len(line)
-        for candidate_len in range(len_min, line_len+1):
-            if len_min <= candidate_len <= len_max:
-                i_max = line_len - candidate_len
-                for i in range(i_max):
-                    candidate = line[i:i+candidate_len+1].strip()
+        i_max = line_len - len_min
+        if i_max > 0:
+            for i in range(i_max):
+                candidate_len_max = (line_len - i) if ((line_len - i) < len_max) else len_max
+                for candidate_len in range(len_min, candidate_len_max+1):
+                    candidate = line[i:i+candidate_len].strip()
                     if is_base(base_pattern, candidate) and len(candidate) > 0:
                         candidate_decoded = decode_f(candidate)
                         if is_unicode(candidate_decoded):
