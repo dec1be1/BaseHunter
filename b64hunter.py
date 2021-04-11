@@ -47,7 +47,11 @@ def get_decodefunction_and_basepattern(base):
 
 def search_strings(base_pattern, decode_f, data_lines, len_min, len_max):
     """
+    base_pattern is the python3 compiled regex pattern according selected base.
+    decode_f is the decoding function according the selected base.
     data_lines is an array of strings.
+    len_min is the minimum length of encoded strings to hunt.
+    len_max is the maximum length of encoded strings to hunt.
     return an array of 2-tuples (line_number, decoded string).
     """
     results = []
@@ -69,7 +73,7 @@ def search_strings(base_pattern, decode_f, data_lines, len_min, len_max):
                         # Is the decoded string unicode ?
                         if is_unicode(candidate_decoded):
                             results.append((li, candidate_decoded.decode()))
-                            # Consolidate results
+                            # Consolidate results (remove result if it is included in a longer one ON THE SAME LINE)
                             for m in range(len(results)):
                                 for n in range(len(results)):
                                     try:
