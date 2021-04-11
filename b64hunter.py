@@ -45,10 +45,10 @@ def get_decodefunction_and_basepattern(base):
         exit(1)
     return (decode_function, compile(base_regex))
 
-def search_candidates(base_pattern, decode_f, data_lines, len_min, len_max):
+def search_strings(base_pattern, decode_f, data_lines, len_min, len_max):
     """
     data_lines is an array of strings.
-    return an array of 2-tuples (line_number, candidate).
+    return an array of 2-tuples (line_number, decoded string).
     """
     results = []
     li = 0
@@ -57,30 +57,27 @@ def search_candidates(base_pattern, decode_f, data_lines, len_min, len_max):
         line_len = len(line)
         i_max = line_len - len_min
         if i_max > 0:
+            # Loop on position in line
             for i in range(i_max):
                 candidate_len_max = (line_len - i) if ((line_len - i) < len_max) else len_max
+                # Loop on candidate length
                 for candidate_len in range(len_min, candidate_len_max+1):
                     candidate = line[i:i+candidate_len].strip()
+                    # Is the candidate a valid encoded string ?
                     if is_base(base_pattern, candidate) and len(candidate) > 0:
                         candidate_decoded = decode_f(candidate)
+                        # Is the decoded string unicode ?
                         if is_unicode(candidate_decoded):
                             results.append((li, candidate_decoded.decode()))
+                            # Consolidate results
+                            for m in range(len(results)):
+                                for n in range(len(results)):
+                                    try:
+                                        if (m != n) and (results[m][0] == results[n][0]) and (results[m][1] in results[n][1]):
+                                            results.remove((results[m][0], results[m][1]))
+                                    except IndexError:
+                                        pass
     return results
-
-def consolidate(results):
-    """
-    result is a list object.
-    return a consolidated list.
-    """
-    results_c = results.copy()
-    for i in range(len(results)):
-        for j in range(len(results)):
-            if (i!=j) and (results[i][1] in results[j][1]):
-                try:
-                    results_c.remove(results[i])
-                except ValueError:
-                    pass
-    return results_c
 
 
 ### GLOBAL VARIABLES ###
@@ -138,21 +135,16 @@ def main():
         data_lines[i] = data_lines[i].strip()
 
     # Search for candidates
-    print("[*] Info: Hunting base{0} strings (minlen: {1} / maxlen: {2})...".format(base, len_min, len_max))
-    results = search_candidates(base_pattern, decode_function, data_lines, len_min, len_max)
-
-    # Consolidate results
-    print("[*] Info: Consolidating results...")
-    results_c = consolidate(results)
-    results.clear()
+    print("[*] Info: Hunting base{0} encoded strings (minlen: {1} / maxlen: {2})...".format(base, len_min, len_max))
+    res = search_strings(base_pattern, decode_function, data_lines, len_min, len_max)
 
     # Print results
-    if len(results_c) > 0:
-        print("[+] Info: {0} base{1} strings found! Here are the decoded versions:".format(len(results_c), base))
-        for r in results_c:
+    if len(res) > 0:
+        print("[+] Info: {0} base{1} encoded strings found! Here are the decoded strings:".format(len(res), base))
+        for r in res:
             print("  -> Line {0}: {1}".format(r[0], r[1]))
     else:
-        print("[+] Info: base{0} strings not found. Bye!".format(base))
+        print("[+] Info: base{0} encoded strings not found. Bye!".format(base))
 
     exit(0)
 
