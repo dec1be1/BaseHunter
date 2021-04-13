@@ -3,6 +3,7 @@
 import argparse
 from re import compile, match
 from sys import stdin, exit
+from time import time
 
 ### FUNCTIONS ###
 
@@ -95,12 +96,12 @@ default_maxlen = 50
 
 def main():
 
-    parser = argparse.ArgumentParser(description="This script hunts baseXX encoded strings in unicode data and try to decode it.")
+    parser = argparse.ArgumentParser(description="This script hunts baseXX encoded strings in unicode data and try to decode them.")
     parser.add_argument("-f", "--file", help="The path of the input file.", required=False)
-    parser.add_argument("-i", "--stdin", help="This option makes the script read on stdin", required=False, action='store_true')
+    parser.add_argument("-i", "--stdin", help="This option makes the script to read data on stdin", required=False, action='store_true')
     parser.add_argument("-n", "--minlen", help="The minimum length of encoded strings to hunt. Default is {0}.".format(default_minlen), required=False, default=default_minlen)
     parser.add_argument("-x", "--maxlen", help="The maximum length of encoded strings to hunt. Default is {0}.".format(default_maxlen), required=False, default=default_maxlen)
-    parser.add_argument("-b", "--base", help="The base of encoded strings to hunt. Default is {0}.".format(default_base), required=False, default=default_base)
+    parser.add_argument("-b", "--base", help="The base of encoded strings to hunt. 16, 32 and 64 supported. Default is {0}.".format(default_base), required=False, default=default_base)
     args = parser.parse_args()
 
     file_path = args.file
@@ -139,12 +140,14 @@ def main():
         data_lines[i] = data_lines[i].strip()
 
     # Search for candidates
-    print("[*] Info: Hunting base{0} encoded strings (minlen: {1} / maxlen: {2})...".format(base, len_min, len_max))
+    print("[*] Info: Hunting base{0} encoded strings which can be decoded as unicode (minlen: {1} / maxlen: {2})...".format(base, len_min, len_max))
+    start_time = int(time())
     res = search_strings(base_pattern, decode_function, data_lines, len_min, len_max)
 
     # Print results
+    search_time = int(time() - start_time)
     if len(res) > 0:
-        print("[+] Info: {0} base{1} encoded strings found! Here are the decoded strings:".format(len(res), base))
+        print("[+] Info: {0} base{1} encoded string(s) found in {2}s! Decoded versions:".format(len(res), base, search_time))
         for r in res:
             print("  -> Line {0}: {1}".format(r[0], r[1]))
     else:
