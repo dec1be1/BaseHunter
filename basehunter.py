@@ -7,6 +7,7 @@ from time import time
 
 ### FUNCTIONS ###
 
+
 def is_base(base_pattern, str):
     """
     base_pattern is a compiled python3 regex.
@@ -14,6 +15,7 @@ def is_base(base_pattern, str):
     return True if the string match the base_pattern or False if it is not.
     """
     return base_pattern.match(str, 0, len(str))
+
 
 def is_unicode(data_b):
     """
@@ -25,6 +27,7 @@ def is_unicode(data_b):
     except UnicodeDecodeError:
         return False
 
+
 def get_decodefunction_and_basepattern(base):
     """
     base is a string ("64" for example).
@@ -32,6 +35,7 @@ def get_decodefunction_and_basepattern(base):
     """
     if base == "64":
         from base64 import b64decode
+
         decode_function = b64decode
         base_regex = "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/][AQgw]==|[A-Za-z0-9+/]{2}[AEIMQUYcgkosw048]=)?$"
     elif base == "16":
@@ -39,12 +43,14 @@ def get_decodefunction_and_basepattern(base):
         base_regex = "^([A-Fa-f0-9][A-Fa-f0-9])+$"
     elif base == "32":
         from base64 import b32decode
+
         decode_function = b32decode
         base_regex = "^(?:[A-Z2-7]{8})*(?:[A-Z2-7]{2}={6}|[A-Z2-7]{4}={4}|[A-Z2-7]{5}={3}|[A-Z2-7]{7}=)?$"
     else:
         print("[!] Error: Base {0} not found. Bye!".format(base))
         exit(1)
     return (decode_function, compile(base_regex))
+
 
 def search_strings(base_pattern, decode_f, data_lines, len_min, len_max):
     """
@@ -64,10 +70,12 @@ def search_strings(base_pattern, decode_f, data_lines, len_min, len_max):
         if i_max > 0:
             # Loop on position in line
             for i in range(i_max):
-                candidate_len_max = (line_len - i) if ((line_len - i) < len_max) else len_max
+                candidate_len_max = (
+                    (line_len - i) if ((line_len - i) < len_max) else len_max
+                )
                 # Loop on candidate length
-                for candidate_len in range(len_min, candidate_len_max+1):
-                    candidate = line[i:i+candidate_len].strip()
+                for candidate_len in range(len_min, candidate_len_max + 1):
+                    candidate = line[i : i + candidate_len].strip()
                     # Is the candidate a valid encoded string ?
                     if is_base(base_pattern, candidate) and len(candidate) > 0:
                         candidate_decoded = decode_f(candidate)
@@ -78,8 +86,14 @@ def search_strings(base_pattern, decode_f, data_lines, len_min, len_max):
                             for m in range(len(results)):
                                 for n in range(len(results)):
                                     try:
-                                        if (m != n) and (results[m][0] == results[n][0]) and (results[m][1] in results[n][1]):
-                                            results.remove((results[m][0], results[m][1]))
+                                        if (
+                                            (m != n)
+                                            and (results[m][0] == results[n][0])
+                                            and (results[m][1] in results[n][1])
+                                        ):
+                                            results.remove(
+                                                (results[m][0], results[m][1])
+                                            )
                                     except IndexError:
                                         pass
     return results
@@ -94,14 +108,49 @@ default_maxlen = 50
 
 ### MAIN FUNCTION ###
 
+
 def main():
 
-    parser = argparse.ArgumentParser(description="This script hunts baseXX encoded strings in unicode data and try to decode them.")
-    parser.add_argument("-f", "--file", help="The path of the input file.", required=False)
-    parser.add_argument("-i", "--stdin", help="This option makes the script to read data on stdin", required=False, action='store_true')
-    parser.add_argument("-n", "--minlen", help="The minimum length of encoded strings to hunt. Default is {0}.".format(default_minlen), required=False, default=default_minlen)
-    parser.add_argument("-x", "--maxlen", help="The maximum length of encoded strings to hunt. Default is {0}.".format(default_maxlen), required=False, default=default_maxlen)
-    parser.add_argument("-b", "--base", help="The base of encoded strings to hunt. 16, 32 and 64 supported. Default is {0}.".format(default_base), required=False, default=default_base)
+    parser = argparse.ArgumentParser(
+        description="This script hunts baseXX encoded strings in unicode data and try to decode them."
+    )
+    parser.add_argument(
+        "-f", "--file", help="The path of the input file.", required=False
+    )
+    parser.add_argument(
+        "-i",
+        "--stdin",
+        help="This option makes the script to read data on stdin",
+        required=False,
+        action="store_true",
+    )
+    parser.add_argument(
+        "-n",
+        "--minlen",
+        help="The minimum length of encoded strings to hunt. Default is {0}.".format(
+            default_minlen
+        ),
+        required=False,
+        default=default_minlen,
+    )
+    parser.add_argument(
+        "-x",
+        "--maxlen",
+        help="The maximum length of encoded strings to hunt. Default is {0}.".format(
+            default_maxlen
+        ),
+        required=False,
+        default=default_maxlen,
+    )
+    parser.add_argument(
+        "-b",
+        "--base",
+        help="The base of encoded strings to hunt. 16, 32 and 64 supported. Default is {0}.".format(
+            default_base
+        ),
+        required=False,
+        default=default_base,
+    )
     args = parser.parse_args()
 
     file_path = args.file
@@ -112,7 +161,7 @@ def main():
 
     # Check arguments
     if not file_path and not STDIN:
-        print("[!] Error: You must give me some data. Try \"--help\". Bye!")
+        print('[!] Error: You must give me some data. Try "--help". Bye!')
         exit(1)
 
     # Base
@@ -122,7 +171,7 @@ def main():
     if STDIN:
         data_b = stdin.buffer.read()
     else:
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             data_b = f.read()
     print("[+] Info: Input data loaded: {0} bytes.".format(len(data_b)))
 
@@ -140,14 +189,22 @@ def main():
         data_lines[i] = data_lines[i].strip()
 
     # Search for candidates
-    print("[*] Info: Hunting base{0} encoded strings which can be decoded as unicode (minlen: {1} / maxlen: {2})...".format(base, len_min, len_max))
+    print(
+        "[*] Info: Hunting base{0} encoded strings which can be decoded as unicode (minlen: {1} / maxlen: {2})...".format(
+            base, len_min, len_max
+        )
+    )
     start_time = int(time())
     res = search_strings(base_pattern, decode_function, data_lines, len_min, len_max)
 
     # Print results
     search_time = int(time() - start_time)
     if len(res) > 0:
-        print("[+] Info: {0} base{1} encoded string(s) found in {2}s! Decoded versions:".format(len(res), base, search_time))
+        print(
+            "[+] Info: {0} base{1} encoded string(s) found in {2}s! Decoded versions:".format(
+                len(res), base, search_time
+            )
+        )
         for r in res:
             print("  -> Line {0}: {1}".format(r[0], r[1]))
     else:
@@ -155,5 +212,6 @@ def main():
 
     exit(0)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
